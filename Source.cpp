@@ -473,7 +473,7 @@ public:
 
 
 	friend ostream& operator<<(ostream& out, const Scriitor& s) {
-		out << "numele autorului: " << s.numeS;
+		out << "numele autorului: " << s.numeS<<endl;
 		out << "cate carti a scris? " << s.nrCarti; //mrg
 
 		if (s.books != nullptr) {
@@ -486,8 +486,11 @@ public:
 	}
 
 	friend istream& operator>>(istream& in, Scriitor& s) {
+		cout << "numele autorului: ";
 		in >> s.numeS;
+		cout << "cate carti a scris? ";
 		in >> s.nrCarti;
+		cout << "introdu date despre cartile scrie de autor:";
 		Book* books = new Book[s.nrCarti];
 		for (int i = 0; i < s.nrCarti; i++) {
 			in >> s.books[i];
@@ -756,7 +759,7 @@ void main() {
 
 
 	//salvare in fisier binar
-	Cititor c("Mara", *books, 3), c1;
+	/*Cititor c("Mara", *books, 3), c1; //nu citeste a doua carte???
 	cout << c;
 	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
@@ -773,25 +776,26 @@ void main() {
 		fin.close();
 	}
 	else
-		cout << " nu se poate deschide fisierul binar pentru citire";
+		cout << " nu se poate deschide fisierul binar pentru citire";*/
 
 
 
 	//cerinta 8
-/*cout << "--- lista ---";
+	cout << "--- lista ---";
 
-Scriitor s("liviu rebreanu", *books, 3); cout << endl;
-Scriitor s1("liviu rebreanu", *books, 3); cout << endl;
-Scriitor s2("liviu rebreanu", *books, 3); cout << endl;
+	Scriitor s("liviu rebreanu", *books, 3); cout << endl;
+	cout << s;
+	/*Scriitor s1("liviu rebreanu", *books, 3); cout << endl;
+	Scriitor s2("liviu rebreanu", *books, 3); cout << endl;
 
-list<Book> listaScriitori;
-list<Book>::iterator itList;
+	list<Book> listaScriitori;
+	list<Book>::iterator itList;
 
-listaScriitori.push_back(b);
-listaScriitori.push_back(b1);
-listaScriitori.push_front(b2);
-for (itList = listaScriitori.begin(); itList != listaScriitori.end(); itList++)
-	cout << *itList;*/
+	listaScriitori.push_back(b);
+	listaScriitori.push_back(b1);
+	listaScriitori.push_front(b2);
+	for (itList = listaScriitori.begin(); itList != listaScriitori.end(); itList++)
+		cout << *itList;*/
 
 
 
