@@ -105,19 +105,19 @@ public:
 	}
 
 	//getteri
-	const char* getNume() const {
+	const char* getNume()  {
 		return nume;
 	}
 
-	int* getVersiuni() const {
+	int* getVersiuni()  {
 		return versiuni;
 	}
 
-	int getNrV() const {
+	int getNrV()  {
 		return nrV;
 	}
 
-	int getNrCarte() const {
+	int getNrCarte()  {
 		return nrCarte;
 	}
 
@@ -139,9 +139,9 @@ public:
 		for (int i = 0; i < b.nrV; i++)
 			this->versiuni[i] = b.versiuni[i];
 
-		this->nrV = nrV;
-		this->nrCarte = nrCarte;
-		this->pret = pret;
+		this->nrV = b.nrV;
+		this->nrCarte = b.nrCarte;
+		this->pret = b.pret;
 
 	}
 
@@ -530,7 +530,7 @@ public:
 
 };
 
-class Physical :private Book, public IMagazin {
+class Physical :public Book, public IMagazin {
 	bool EsteHardcover; //1-da, 0-nu, este paperback
 
 public:
@@ -572,8 +572,8 @@ public:
 		return !EsteHardcover;
 	}
 
-	friend ostream& operator<< (ostream& out, const ::Physical& p) {
-		out << Book(p.getNume(), p.getVersiuni(), p.getNrV(), p.getNrCarte(), p.getPret());
+	friend ostream& operator<< (ostream& out, const Physical& p) {
+		out << (Book)p;
 		out << "este hardcover cartea? " << p.EsteHardcover;
 		return out;
 	}
@@ -589,7 +589,7 @@ public:
 
 };
 
-class Audiobook : private Book, public IMagazin {
+class Audiobook : public Book, public IMagazin {
 	double durata;
 
 public:
@@ -621,7 +621,7 @@ public:
 	}
 
 	friend ostream& operator<< (ostream& out, const Audiobook& a) {
-		out << endl << Book(a.getNume(), a.getVersiuni(), a.getNrV(), a.getNrCarte(), a.getPret());
+		out << (Book)a;
 		out << "cat dureaza sa asculti tot audiobook-ul? " << a.durata;
 		return out;
 	}
@@ -634,7 +634,7 @@ public:
 	}
 };
 
-class Ebook : private Book, public IMagazin {
+class Ebook : public Book, public IMagazin {
 	string compatibilitate; //cu ce aplicatii este compatibila citire acestei carti (kindle, google books, apple books etc)
 	bool AreNarator; //daca are optiune de narator pentru persoanele cu dificultati de vaz
 
@@ -682,7 +682,7 @@ public:
 	}
 
 	friend ostream& operator<< (ostream& out, const Ebook& e) {
-		out << endl << Book(e.getNume(), e.getVersiuni(), e.getNrV(), e.getNrCarte(), e.getPret());
+		out << (Book)e;
 		out << "cu ce aplicatii este compatibila aceasta carte? " << e.compatibilitate << endl << "are optiune de narator? " << e.AreNarator;
 		return out;
 	}
@@ -705,9 +705,9 @@ void main() {
 	int v1[] = { 2019,2020,2021 };
 	int v2[] = { 1920,1980,2010,2020 };
 	int v3[] = { 1937,1999 };
-	Book b("Rascoala", v3, sizeof(v3) / sizeof(v3[0]), 1, 10.99),
-		b1("Ion", v2, sizeof(v2) / sizeof(v2[0]), 1, 9.99),
-		b2("Gorila", v3, sizeof(v3) / sizeof(v3[0]), 2, 9.99);
+	Book b("Rascoala", v3, 2, 1, 10.99),
+		b1("Ion", v2, 4, 1, 9.99),
+		b2("Gorila", v3, 2, 2, 9.99);
 	cout << b.Descriere();
 	//cin >> b; cout << endl;
 	cout << b << endl << b1 << endl << b2;
@@ -715,10 +715,11 @@ void main() {
 	if (b.SchimbarePret() < 0)
 		cout << "pretul este mult prea mic ca sa se mai modifice";
 	else
-		cout << b.SchimbarePret() << endl;
+		cout <<endl<< b.SchimbarePret() ;
 
 
-	Physical p("divergent", v, 4, 1, 49.99, 1);
+	Physical p("divergent", v, 4, 1, 49.99, 1),p1("Insurgent",v,4,2,49.99,1), p2("Allegiant",v,4,3,49.99,1);
+	Book* carti[] = { &p,&p1,&p2 };
 	cout << p.Descriere();
 	cout << p << endl << endl;
 
@@ -783,19 +784,22 @@ void main() {
 	//cerinta 8
 	cout << "--- lista ---";
 
-	Scriitor s("liviu rebreanu", *books, 3); cout << endl;
-	cout << s;
-	/*Scriitor s1("liviu rebreanu", *books, 3); cout << endl;
-	Scriitor s2("liviu rebreanu", *books, 3); cout << endl;
+	Scriitor s("liviu rebreanu", *books, 3); 
+	//cout << s;
+	Scriitor s1("liviu rebreanu", *books, 3); 
+	Scriitor s2("liviu rebreanu", *books, 3); 
 
 	list<Book> listaScriitori;
 	list<Book>::iterator itList;
 
 	listaScriitori.push_back(b);
 	listaScriitori.push_back(b1);
-	listaScriitori.push_front(b2);
+	listaScriitori.push_back(b2);
+	listaScriitori.push_back(p);
+	listaScriitori.push_back(p1);
+	listaScriitori.push_back(p2);
 	for (itList = listaScriitori.begin(); itList != listaScriitori.end(); itList++)
-		cout << *itList;*/
+		cout << *itList;
 
 
 
