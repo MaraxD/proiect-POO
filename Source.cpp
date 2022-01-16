@@ -21,18 +21,17 @@ public:
 };
 
 
-//interfata
+//clasa abstracta
 class IMagazin {
 public:
 	virtual string Descriere() = 0;
-};//trebuie si mostenirea lui sa fie privata???
+};
 
-//informatia pe care o gasesti pe google de ex, sau pe site ul carturesti
-class Book :public IMagazin { //practic ca exista o carte cu numele etc.. pe piata, somewhere intr un magazin
+class Book :public IMagazin {
 	char* nume;
 	int* versiuni; //vector care retine anii in care a fost relansata cartea
 	int nrV;
-	int nrCarte; //dintr o serie
+	int nrCarte; //nr cartii dintr o serie
 	double pret;
 
 public:
@@ -105,19 +104,19 @@ public:
 	}
 
 	//getteri
-	const char* getNume()  {
+	const char* getNume() {
 		return nume;
 	}
 
-	int* getVersiuni()  {
+	int* getVersiuni() {
 		return versiuni;
 	}
 
-	int getNrV()  {
+	int getNrV() {
 		return nrV;
 	}
 
-	int getNrCarte()  {
+	int getNrCarte() {
 		return nrCarte;
 	}
 
@@ -165,13 +164,17 @@ public:
 			this->nume = new char[strlen(b.nume) + 1];
 			strcpy_s(this->nume, strlen(b.nume) + 1, b.nume);
 
-			if (this->versiuni != nullptr)
+			this->nrV = b.nrV;
+
+			if (this->versiuni != nullptr) {
 				delete[] this->versiuni;
+			}
+
 			this->versiuni = new int[b.nrV];
 			for (int i = 0; i < b.nrV; i++)
 				this->versiuni[i] = b.versiuni[i];
 
-			this->nrV = b.nrV;
+
 			this->nrCarte = b.nrCarte;
 			this->pret = b.pret;
 
@@ -191,6 +194,7 @@ public:
 	}
 
 	//supraincarcare tuturor operatoriilor cunoscuti
+	//op <<,>>
 	friend ostream& operator<< (ostream& out, const Book& b) {
 		out << endl << "numele cartii: " << b.nume << endl << "la ce versiune e? " << b.nrV;
 		out << " (";
@@ -287,245 +291,11 @@ public:
 		return pret;
 	}
 
-	//<    ??e bine??
+	//<    
 	int operator<(const Book& b) {
 		if (pret < b.pret)
 			return true;
 		return false;
-	}
-
-
-
-};
-
-//clasa compusa
-class Cititor {
-	string numeC;
-	Book* books; //ce carti are clientul, un vector din obiecte de tip Book; cititorul has a book
-	int nrCarti;
-
-public:
-
-	Cititor() {
-
-	}
-
-	Cititor(string numeC, Book* books, int nrCarti) {
-		if (numeC.empty())
-			throw new exceptieNume();
-		else
-			this->numeC = numeC;
-
-		if (nrCarti < 0)
-			throw new exception("numarul e invalid");
-		else this->nrCarti = nrCarti;
-
-		if (books != nullptr) {
-			this->books = new Book[nrCarti];
-			for (int i = 0; i < nrCarti; i++)
-				this->books = books;
-		}
-		else
-			throw new exception("vectorul este invalid");
-
-	}
-
-	Cititor(const Cititor& c) {
-		this->numeC = c.numeC;
-		this->nrCarti = c.nrCarti;
-
-		this->books = new Book[c.nrCarti];
-		for (int i = 0; i < c.nrCarti; i++)
-			this->books[i] = c.books[i];
-
-	}
-
-	~Cititor() {
-		if (this->books != nullptr) {
-			delete[] this->books;
-		}
-	}
-
-
-	Cititor operator=(const Cititor& c) {
-		if (this != &c) {
-			this->numeC = c.numeC;
-			this->nrCarti = c.nrCarti;
-
-			if (this->books != c.books) {
-				delete[] this->books;
-				this->books = new Book[nrCarti];
-				for (int i = 0; i < c.nrCarti; i++)
-					this->books[i] = c.books[i];
-			}
-		}
-
-		return *this;
-	}
-
-
-	friend ostream& operator<<(ostream& out, Cititor& c) {
-		out << "numele cititorului: " << c.numeC << endl;
-		out << "cate carti detine? " << c.nrCarti;
-
-		if (c.books != nullptr) {
-			for (int i = 0; i < c.nrCarti; i++)
-				out << c.books[i] << " ";
-		}
-
-		out << endl;
-		return out;
-	}
-
-	friend istream& operator>>(istream& in, Cititor& c) {
-		in >> c.numeC;
-		in >> c.nrCarti;
-		Book* books = new Book[c.nrCarti];
-		for (int i = 0; i < c.nrCarti; i++) {
-			in >> c.books[i];
-			cout << " ";
-		}
-
-		return in;
-	}
-
-	//>>,<< in binar
-	void scriereInFisierBinar(ofstream& fout) {
-		int dim = numeC.size() + 1;
-
-		fout.write((char*)&dim, sizeof(dim));
-		fout.write(this->numeC.c_str(), dim);
-
-		fout.write((char*)&this->nrCarti, sizeof(this->nrCarti));
-
-		for (int i = 0; i < nrCarti; i++) {
-			fout.write((char*)&books[i], sizeof(Book));
-		}
-	}
-
-	void citireDinFisierBinar(ifstream& fin) {
-		int dim = 0;
-		fin.read((char*)&dim, sizeof(dim));
-
-		char aux[100];
-		fin.read(aux, dim);
-		numeC = aux;
-
-		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
-
-		for (int i = 0; i < nrCarti; i++) {
-			fin.read((char*)&books[i], sizeof(Book)); //asa se face???
-		}
-
-
-	}
-
-};
-
-//clasa asemanatoare cu cea precedenta
-class Scriitor {
-	string numeS;
-	int nrCarti;
-	Book* books; //vector ce contine ce carti a scris; scriitorul has a book
-
-public:
-
-	Scriitor(string n = "Anonim") {
-
-	}
-
-	Scriitor(string numeS, Book* books, int nrCarti) {
-		if (numeS.empty())
-			throw new exceptieNume();
-		else
-			this->numeS = numeS;
-
-		if (nrCarti < 0)
-			throw new exception("numarul e invalid");
-		else this->nrCarti = nrCarti;
-
-		if (books != nullptr) {
-			this->books = books;
-		}
-		else
-			throw new exception("vectorul este invalid");
-	}
-
-	Scriitor(const Scriitor& s) {
-		if (s.numeS.empty())
-			throw new exceptieNume();
-		else
-			this->numeS = s.numeS;
-
-		if (s.nrCarti < 0)
-			throw new exception("numarul e invalid");
-		else this->nrCarti = s.nrCarti;
-
-		if (s.books != nullptr) {
-			this->books = new Book[s.nrCarti];
-			for (int i = 0; i < s.nrCarti; i++)
-				this->books[i] = s.books[i];
-		}
-		else
-			throw new exception("vectorul este invalid");
-	}
-
-
-
-	friend ostream& operator<<(ostream& out, const Scriitor& s) {
-		out << "numele autorului: " << s.numeS<<endl;
-		out << "cate carti a scris? " << s.nrCarti; //mrg
-
-		if (s.books != nullptr) {
-			for (int i = 0; i < s.nrCarti; i++)
-				out << s.books[i] << " ";
-		}
-
-		out << endl;
-		return out;
-	}
-
-	friend istream& operator>>(istream& in, Scriitor& s) {
-		cout << "numele autorului: ";
-		in >> s.numeS;
-		cout << "cate carti a scris? ";
-		in >> s.nrCarti;
-		cout << "introdu date despre cartile scrie de autor:";
-		Book* books = new Book[s.nrCarti];
-		for (int i = 0; i < s.nrCarti; i++) {
-			in >> s.books[i];
-			cout << " ";
-		}
-
-		return in;
-	}
-
-	//>>,<< in binar
-	void scriereInFisierBinar(ofstream& fout) {
-		int dim = numeS.size() + 1;
-
-		fout.write((char*)&dim, sizeof(dim));
-		fout.write(this->numeS.c_str(), dim);
-
-		fout.write((char*)&this->nrCarti, sizeof(this->nrCarti));
-
-		fout.write((char*)&books, sizeof(Book));
-	}
-
-	void citireDinFisierBinar(ifstream& fin) {
-		int dim = 0;
-		fin.read((char*)&dim, sizeof(dim));
-
-		char aux[100];
-		fin.read(aux, dim);
-		numeS = aux;
-
-		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
-
-		for (int i = 0; i < nrCarti; i++) {
-			fin.read((char*)&books[i], sizeof(Book)); //asa se face???
-		}
-
 	}
 
 };
@@ -549,6 +319,20 @@ public:
 	}
 
 	~Physical() {
+
+	}
+
+	Physical(const Physical& p) :Book(p) {
+		this->EsteHardcover = p.EsteHardcover;
+
+	}
+
+	Physical operator=(const Physical& p) {
+		if (this != &p) {
+			Book::operator=(p);
+			this->EsteHardcover = p.EsteHardcover;
+		}
+		return *this;
 
 	}
 
@@ -663,15 +447,6 @@ public:
 	}
 
 
-
-	Ebook operator+(Ebook& e) {
-		Ebook aux(*this);
-
-		aux.compatibilitate = aux.compatibilitate + " " + e.compatibilitate; //down casting: ex: compatibilitate: google books
-
-		return aux;
-	}
-
 	double SchimbarePret() {
 		getPret() -= 30.00;
 		return getPret();
@@ -700,36 +475,286 @@ public:
 
 };
 
+//clasa compusa
+class Cititor {
+	string numeC;
+	Book* books; //ce carti are clientul, un vector din obiecte de tip Book; cititorul has a book
+	int nrCarti;
+
+public:
+
+	Cititor() {
+
+	}
+
+	Cititor(string numeC, Book* books, int nrCarti) {
+		if (numeC.empty())
+			throw new exceptieNume();
+		else
+			this->numeC = numeC;
+
+		if (nrCarti < 0)
+			throw new exception("numarul e invalid");
+		else this->nrCarti = nrCarti;
+
+		if (books != nullptr) {
+			this->books = new Book[nrCarti];
+			for (int i = 0; i < nrCarti; i++)
+				this->books[i] = books[i];
+		}
+		else
+			throw new exception("vectorul este invalid");
+
+	}
+
+	Cititor(const Cititor& c) {
+		this->numeC = c.numeC;
+		this->nrCarti = c.nrCarti;
+
+		this->books = new Book[c.nrCarti];
+		for (int i = 0; i < c.nrCarti; i++)
+			this->books[i] = c.books[i];
+
+	}
+
+	~Cititor() {
+		if (this->books != nullptr) {
+			delete[] this->books;
+		}
+	}
+
+
+	Cititor operator=(const Cititor& c) {
+		if (this != &c) {
+			this->numeC = c.numeC;
+			this->nrCarti = c.nrCarti;
+
+			if (this->books != c.books) {
+				delete[] this->books;
+				this->books = new Book[nrCarti];
+				for (int i = 0; i < c.nrCarti; i++)
+					this->books[i] = c.books[i];
+			}
+		}
+
+		return *this;
+	}
+
+
+	friend ostream& operator<<(ostream& out, Cititor& c) {
+		out << "numele cititorului: " << c.numeC << endl;
+		out << "cate carti detine? " << c.nrCarti;
+
+		if (c.books != nullptr) {
+			for (int i = 0; i < c.nrCarti; i++)
+				out << c.books[i] << " ";
+		}
+
+		out << endl;
+		return out;
+	}
+
+	friend istream& operator>>(istream& in, Cititor& c) {
+		in >> c.numeC;
+		in >> c.nrCarti;
+		Book* books = new Book[c.nrCarti];
+		for (int i = 0; i < c.nrCarti; i++) {
+			in >> c.books[i];
+			cout << " ";
+		}
+
+		return in;
+	}
+
+	//>>,<< in binar
+	void scriereInFisierBinar(ofstream& fout) {
+		int dim = numeC.size() + 1;
+
+		fout.write((char*)&dim, sizeof(dim));
+		fout.write(this->numeC.c_str(), dim);
+
+		fout.write((char*)&this->nrCarti, sizeof(this->nrCarti));
+
+		for (int i = 0; i < nrCarti; i++) {
+			fout.write((char*)&books[i], sizeof(Book));
+		}
+	}
+
+	void citireDinFisierBinar(ifstream& fin) {
+		int dim = 0;
+		fin.read((char*)&dim, sizeof(dim));
+
+		char aux[100];
+		fin.read(aux, dim);
+		numeC = aux;
+
+		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
+
+		for (int i = 0; i < nrCarti; i++) {
+			fin.read((char*)&books[i], sizeof(Book));
+		}
+
+
+	}
+
+};
+
+//clasa asemanatoare cu cea precedenta
+class Scriitor {
+	string numeS;
+	int nrCarti;
+	Book* books; //vector ce contine ce carti a scris; scriitorul has a book
+
+public:
+
+	Scriitor(string n = "Anonim") {
+
+	}
+
+	Scriitor(string numeS, Book* books, int nrCarti) {
+		if (numeS.empty())
+			throw new exceptieNume();
+		else
+			this->numeS = numeS;
+
+		if (nrCarti < 0)
+			throw new exception("numarul e invalid");
+		else this->nrCarti = nrCarti;
+
+		if (books != nullptr) {
+			this->books = books;
+		}
+		else
+			throw new exception("vectorul este invalid");
+	}
+
+	Scriitor(const Scriitor& s) {
+		if (s.numeS.empty())
+			throw new exceptieNume();
+		else
+			this->numeS = s.numeS;
+
+		if (s.nrCarti < 0)
+			throw new exception("numarul e invalid");
+		else this->nrCarti = s.nrCarti;
+
+		if (s.books != nullptr) {
+			this->books = new Book[s.nrCarti];
+			for (int i = 0; i < s.nrCarti; i++)
+				this->books[i] = s.books[i];
+		}
+		else
+			throw new exception("vectorul este invalid");
+	}
+
+
+
+	friend ostream& operator<<(ostream& out, const Scriitor& s) {
+		out << "numele autorului: " << s.numeS << endl;
+		out << "cate carti a scris? " << s.nrCarti; //mrg
+
+		if (s.books != nullptr) {
+			for (int i = 0; i < s.nrCarti; i++)
+				out << s.books[i] << " ";
+		}
+
+		out << endl;
+		return out;
+	}
+
+	friend istream& operator>>(istream& in, Scriitor& s) {
+		cout << "numele autorului: ";
+		in >> s.numeS;
+		cout << "cate carti a scris? ";
+		in >> s.nrCarti;
+		cout << "introdu date despre cartile scrie de autor:";
+		Book* books = new Book[s.nrCarti];
+		for (int i = 0; i < s.nrCarti; i++) {
+			in >> s.books[i];
+			cout << " ";
+		}
+
+		return in;
+	}
+
+	//>>,<< in binar
+	void scriereInFisierBinar(ofstream& fout) {
+		int dim = numeS.size() + 1;
+
+		fout.write((char*)&dim, sizeof(dim));
+		fout.write(this->numeS.c_str(), dim);
+
+		fout.write((char*)&this->nrCarti, sizeof(this->nrCarti));
+
+		fout.write((char*)&books, sizeof(Book));
+	}
+
+	void citireDinFisierBinar(ifstream& fin) {
+		int dim = 0;
+		fin.read((char*)&dim, sizeof(dim));
+
+		char aux[100];
+		fin.read(aux, dim);
+		numeS = aux;
+
+		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
+
+		for (int i = 0; i < nrCarti; i++) {
+			fin.read((char*)&books[i], sizeof(Book));
+		}
+
+	}
+
+};
+
+
 void main() {
+
+	//cerinta 1 - afisare obiecte de tip Book, Physical
 	int v[] = { 2009,2010,2015,2020 };
 	int v1[] = { 2019,2020,2021 };
 	int v2[] = { 1920,1980,2010,2020 };
 	int v3[] = { 1937,1999 };
-	Book b("Rascoala", v3, 2, 1, 10.99),
-		b1("Ion", v2, 4, 1, 9.99),
-		b2("Gorila", v3, 2, 2, 9.99);
-	cout << b.Descriere();
+	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99),b3;
+	cout << b.Descriere();// early-binding
 	//cin >> b; cout << endl;
 	cout << b << endl << b1 << endl << b2;
 
+	//testare functie virtuala 
+	//early - binding 
 	if (b.SchimbarePret() < 0)
 		cout << "pretul este mult prea mic ca sa se mai modifice";
 	else
-		cout <<endl<< b.SchimbarePret() ;
+		cout << endl << b.SchimbarePret();
 
 
-	Physical p("divergent", v, 4, 1, 49.99, 1),p1("Insurgent",v,4,2,49.99,1), p2("Allegiant",v,4,3,49.99,1);
-	Book* carti[] = { &p,&p1,&p2 };
+	Physical p("Divergent", v, 4, 1, 49.99, 1), p1("Insurgent", v, 4, 2, 49.99, 1), p2("Allegiant", v, 4, 3, 49.99, 1);
+	Book* carti[] = { &p,&p1,&p2 }; //asa ?? sau ca la books
 	cout << p.Descriere();
 	cout << p << endl << endl;
 
 	cout << p.SchimbarePret() << endl << endl;
 
-	Book* books[] = { &b,&b1,&b2 };
-	for (int i = 0; i < 3; i++)
-		cout << *books[i];
+	//late-binding
+	cout << "--- late binding ---";
+	Book* bp = &p;
+	cout << bp->Descriere() << endl;
+	cout << bp->SchimbarePret() << endl;
 
-	//testare cerinta 4
+	Book* bp1 = &p1;
+	cout << bp1->Descriere() << endl;
+	cout << bp1->SchimbarePret() << endl;
+
+	Book* bp2 = &p2;
+	cout << bp2->Descriere() << endl;
+	cout << bp2->SchimbarePret() << endl;
+
+	Book books[] = { b,b1,b2 };
+	//asta cred ca trebuie sters, era doar de testare
+	for (int i = 0; i < 3; i++)
+		cout << books[i];
+
+	//testare cerinta 4 - supraincarcarea operatoriilor cunsocuti
 	cout << "--- schimbare nr volum ---" << endl;
 	cout << "inainte de schimbare:" << b << endl;
 	operator++(b, 1);
@@ -759,9 +784,9 @@ void main() {
 
 
 
-	//salvare in fisier binar
-	/*Cititor c("Mara", *books, 3), c1; //nu citeste a doua carte???
-	cout << c;
+	//cerinta 7 - salvare in fisier binar
+	Cititor c("Mara", books, 3), c1; //nu citeste a doua carte???  this->versiuni e null?????
+	//cout << c;
 	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
 		c.scriereInFisierBinar(fout);
@@ -777,17 +802,17 @@ void main() {
 		fin.close();
 	}
 	else
-		cout << " nu se poate deschide fisierul binar pentru citire";*/
+		cout << " nu se poate deschide fisierul binar pentru citire";
 
 
 
-	//cerinta 8
+	//cerinta 8 - transformare vector dinamic de obiecte in lista
 	cout << "--- lista ---";
 
-	Scriitor s("liviu rebreanu", *books, 3); 
+	Scriitor s("liviu rebreanu", books, 3);
 	//cout << s;
-	Scriitor s1("liviu rebreanu", *books, 3); 
-	Scriitor s2("liviu rebreanu", *books, 3); 
+	Scriitor s1("liviu rebreanu", books, 3);
+	Scriitor s2("liviu rebreanu", books, 3);
 
 	list<Book> listaScriitori;
 	list<Book>::iterator itList;
@@ -802,7 +827,8 @@ void main() {
 		cout << *itList;
 
 
-
+	//cerinta 10 - conceptul de polimorfism folosind o clasa abstracta
+	//trebuie sa transform un obiect p de tip phyisical in book
 
 	IMagazin** IVector = new IMagazin * [3]{ &b,&b1,&p }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
 	for (int i = 0; i < 3; i++) {
