@@ -123,9 +123,8 @@ public:
 	//returneaza o referinta de tip lvalue, ca sa pot sa l fac modificabil
 	//rvalue-variab temporara; lvalue nu e, se transmite prin referinta; 
 	//const referinta accepta si lvalue si rvalue iar doubla referinta e pt rvalue
-	double& getPret() const {
-		static double Pret = pret;
-		return Pret;
+	double getPret() {
+		return pret;
 	}
 
 
@@ -134,11 +133,13 @@ public:
 		this->nume = new char[strlen(b.nume) + 1];
 		strcpy_s(this->nume, strlen(b.nume) + 1, b.nume);
 
+		this->nrV = b.nrV;
+
 		this->versiuni = new int[b.nrV];
 		for (int i = 0; i < b.nrV; i++)
 			this->versiuni[i] = b.versiuni[i];
 
-		this->nrV = b.nrV;
+
 		this->nrCarte = b.nrCarte;
 		this->pret = b.pret;
 
@@ -184,8 +185,8 @@ public:
 
 	//implementare functie virtuala
 	double SchimbarePret() {
-		this->pret += 0;
-		return this->pret;
+		pret += 0;
+		return pret;
 	}
 
 	//implementare functie virtuala pura
@@ -341,10 +342,11 @@ public:
 		return EsteHardcover;
 	}
 
+	double pret = getPret();
 
 	double SchimbarePret() {
-		getPret() += 20.00;
-		return getPret();
+		pret += 20.00;
+		return pret;
 	}
 
 	string Descriere() {
@@ -395,8 +397,10 @@ public:
 
 	}
 
+	double pret = getPret();
+
 	double SchimbarePret() {
-		getPret() -= 20.00;
+		pret -= 20.00;
 		return getPret();
 	}
 
@@ -446,9 +450,10 @@ public:
 
 	}
 
+	int pret = getPret();
 
 	double SchimbarePret() {
-		getPret() -= 30.00;
+		pret -= 30.00;
 		return getPret();
 	}
 
@@ -495,15 +500,18 @@ public:
 
 		if (nrCarti < 0)
 			throw new exception("numarul e invalid");
-		else this->nrCarti = nrCarti;
+		else 
+			this->nrCarti = nrCarti;
 
 		if (books != nullptr) {
 			this->books = new Book[nrCarti];
 			for (int i = 0; i < nrCarti; i++)
-				this->books[i] = books[i];
+				this->books[i] = books[i]; //se duce in constr de copiere din Book
 		}
 		else
 			throw new exception("vectorul este invalid");
+
+		//this->books=books;
 
 	}
 
@@ -531,7 +539,7 @@ public:
 
 			if (this->books != c.books) {
 				delete[] this->books;
-				this->books = new Book[nrCarti];
+				this->books = new Book[c.nrCarti];
 				for (int i = 0; i < c.nrCarti; i++)
 					this->books[i] = c.books[i];
 			}
@@ -541,7 +549,7 @@ public:
 	}
 
 
-	friend ostream& operator<<(ostream& out, Cititor& c) {
+	friend ostream& operator<<(ostream& out, const Cititor& c) {
 		out << "numele cititorului: " << c.numeC << endl;
 		out << "cate carti detine? " << c.nrCarti;
 
@@ -575,9 +583,7 @@ public:
 
 		fout.write((char*)&this->nrCarti, sizeof(this->nrCarti));
 
-		for (int i = 0; i < nrCarti; i++) {
-			fout.write((char*)&books[i], sizeof(Book));
-		}
+		fout.write((char*)&books, sizeof(Book));
 	}
 
 	void citireDinFisierBinar(ifstream& fin) {
@@ -590,9 +596,8 @@ public:
 
 		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
 
-		for (int i = 0; i < nrCarti; i++) {
-			fin.read((char*)&books[i], sizeof(Book));
-		}
+		fin.read((char*)&books, sizeof(Book));
+
 
 
 	}
@@ -603,15 +608,11 @@ public:
 class Scriitor {
 	string numeS;
 	int nrCarti;
-	Book* books; //vector ce contine ce carti a scris; scriitorul has a book
+	list<Book*> books; //vector ce contine ce carti a scris; scriitorul has a book
 
 public:
 
-	Scriitor(string n = "Anonim") {
-
-	}
-
-	Scriitor(string numeS, Book* books, int nrCarti) {
+	Scriitor(string numeS, list<Book*> books, int nrCarti) {
 		if (numeS.empty())
 			throw new exceptieNume();
 		else
@@ -619,13 +620,11 @@ public:
 
 		if (nrCarti < 0)
 			throw new exception("numarul e invalid");
-		else this->nrCarti = nrCarti;
-
-		if (books != nullptr) {
-			this->books = books;
-		}
 		else
-			throw new exception("vectorul este invalid");
+			this->nrCarti = nrCarti;
+
+		//validare?
+		this->books = books;
 	}
 
 	Scriitor(const Scriitor& s) {
@@ -638,13 +637,8 @@ public:
 			throw new exception("numarul e invalid");
 		else this->nrCarti = s.nrCarti;
 
-		if (s.books != nullptr) {
-			this->books = new Book[s.nrCarti];
-			for (int i = 0; i < s.nrCarti; i++)
-				this->books[i] = s.books[i];
-		}
-		else
-			throw new exception("vectorul este invalid");
+		//validare
+		this->books = s.books;
 	}
 
 
@@ -653,9 +647,8 @@ public:
 		out << "numele autorului: " << s.numeS << endl;
 		out << "cate carti a scris? " << s.nrCarti; //mrg
 
-		if (s.books != nullptr) {
-			for (int i = 0; i < s.nrCarti; i++)
-				out << s.books[i] << " ";
+		for (Book* b : s.books) {
+			out << *b << endl;
 		}
 
 		out << endl;
@@ -668,10 +661,8 @@ public:
 		cout << "cate carti a scris? ";
 		in >> s.nrCarti;
 		cout << "introdu date despre cartile scrie de autor:";
-		Book* books = new Book[s.nrCarti];
-		for (int i = 0; i < s.nrCarti; i++) {
-			in >> s.books[i];
-			cout << " ";
+		for (Book* b : s.books) {
+			in >> *b;
 		}
 
 		return in;
@@ -686,6 +677,9 @@ public:
 
 		fout.write((char*)&this->nrCarti, sizeof(this->nrCarti));
 
+		for (Book* b : books) {
+			fout.write((char*)&b, sizeof(Book));
+		}
 		fout.write((char*)&books, sizeof(Book));
 	}
 
@@ -699,10 +693,14 @@ public:
 
 		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
 
-		for (int i = 0; i < nrCarti; i++) {
-			fin.read((char*)&books[i], sizeof(Book));
+		for (Book* b : books) {
+			fin.read((char*)&b, sizeof(Book));
 		}
 
+	}
+
+	int getNrCarti() {
+		return nrCarti;
 	}
 
 };
@@ -715,31 +713,31 @@ void main() {
 	int v1[] = { 2019,2020,2021 };
 	int v2[] = { 1920,1980,2010,2020 };
 	int v3[] = { 1937,1999 };
-	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99),b3;
+	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99), b3;
 	cout << b.Descriere();// early-binding
 	//cin >> b; cout << endl;
-	cout << b << endl << b1 << endl << b2;
+	cout << b << b1 << b2;
 
 	//testare functie virtuala 
 	//early - binding 
 	if (b.SchimbarePret() < 0)
 		cout << "pretul este mult prea mic ca sa se mai modifice";
 	else
-		cout << endl << b.SchimbarePret();
+		cout << endl << b.SchimbarePret() << endl;
 
 
 	Physical p("Divergent", v, 4, 1, 49.99, 1), p1("Insurgent", v, 4, 2, 49.99, 1), p2("Allegiant", v, 4, 3, 49.99, 1);
-	Book* carti[] = { &p,&p1,&p2 }; //asa ?? sau ca la books
+	Book carti[] = { p,p1,p2 };
 	cout << p.Descriere();
 	cout << p << endl << endl;
 
 	cout << p.SchimbarePret() << endl << endl;
 
 	//late-binding
-	cout << "--- late binding ---";
+	cout << "--- late binding ---" << endl;
 	Book* bp = &p;
 	cout << bp->Descriere() << endl;
-	cout << bp->SchimbarePret() << endl;
+	cout << bp->SchimbarePret() << endl;//nu schimba pretu??? tot se duce in functia din clasa Book in loc de Physical
 
 	Book* bp1 = &p1;
 	cout << bp1->Descriere() << endl;
@@ -747,12 +745,11 @@ void main() {
 
 	Book* bp2 = &p2;
 	cout << bp2->Descriere() << endl;
-	cout << bp2->SchimbarePret() << endl;
+	cout << bp2->SchimbarePret() << endl << endl;
 
 	Book books[] = { b,b1,b2 };
-	//asta cred ca trebuie sters, era doar de testare
-	for (int i = 0; i < 3; i++)
-		cout << books[i];
+	/*for (int i = 0; i < 3; i++)
+		cout << books[i];*/
 
 	//testare cerinta 4 - supraincarcarea operatoriilor cunsocuti
 	cout << "--- schimbare nr volum ---" << endl;
@@ -777,17 +774,18 @@ void main() {
 	cout << (int)b1 << endl << endl;
 
 	cout << "--- care carte e cea mai ieftina? lets find out ---" << endl;
-	if (b < b1)
+	cout << b2.getPret() << " " << b.getPret() << endl;
+	if (b2 < b)
 		cout << "prima carte e mai ieftina decat a doua" << endl << endl;
 	else
-		cout << "a doua carte e mai ieftina decat prima" << endl << endl;
+		cout << "a doua carte e mai ieftina decat prima sau ambele au acelasi pret" << endl << endl;
 
 
 
 	//cerinta 7 - salvare in fisier binar
-	Cititor c("Mara", books, 3), c1; //nu citeste a doua carte???  this->versiuni e null?????
+	Cititor c("Mara", books, 3), c1; //ok am fct ceva gresit in constructor this->versiuni e null?????
 	//cout << c;
-	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
+	ofstream fout("scriitor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
 		c.scriereInFisierBinar(fout);
 		fout.close();
@@ -807,24 +805,16 @@ void main() {
 
 
 	//cerinta 8 - transformare vector dinamic de obiecte in lista
-	cout << "--- lista ---";
-
-	Scriitor s("liviu rebreanu", books, 3);
-	//cout << s;
-	Scriitor s1("liviu rebreanu", books, 3);
-	Scriitor s2("liviu rebreanu", books, 3);
-
-	list<Book> listaScriitori;
+	cout << "--- lista ---" << endl;
+	list<Book*> listaCarti;
 	list<Book>::iterator itList;
+	listaCarti.push_back(&p);
+	listaCarti.push_back(&p1);
+	listaCarti.push_back(&p2);
 
-	listaScriitori.push_back(b);
-	listaScriitori.push_back(b1);
-	listaScriitori.push_back(b2);
-	listaScriitori.push_back(p);
-	listaScriitori.push_back(p1);
-	listaScriitori.push_back(p2);
-	for (itList = listaScriitori.begin(); itList != listaScriitori.end(); itList++)
-		cout << *itList;
+	Scriitor s("Veronica Roth", listaCarti, listaCarti.size());
+	cout << s;
+
 
 
 	//cerinta 10 - conceptul de polimorfism folosind o clasa abstracta
