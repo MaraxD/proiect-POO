@@ -75,6 +75,11 @@ public:
 	Book() {
 		this->nume = new char[strlen("Unknown") + 1];
 		strcpy_s(this->nume, strlen("Unknown") + 1, "Unknown");
+
+		this->versiuni = nullptr;
+		this->nrV = 0;
+		this->nrCarte = 0;
+		this->pret = NULL;
 	}
 
 	//constructorul fara variabila char*
@@ -492,7 +497,7 @@ public:
 
 	}
 
-	Cititor(string numeC, Book* books, int nrCarti) {
+	Cititor(const string& numeC, Book* books, int nrCarti) {
 		if (numeC.empty())
 			throw new exceptieNume();
 		else
@@ -500,18 +505,16 @@ public:
 
 		if (nrCarti < 0)
 			throw new exception("numarul e invalid");
-		else 
+		else
 			this->nrCarti = nrCarti;
 
 		if (books != nullptr) {
 			this->books = new Book[nrCarti];
 			for (int i = 0; i < nrCarti; i++)
-				this->books[i] = books[i]; //se duce in constr de copiere din Book
+				this->books[i] = books[i]; //se duce in op = din Book
 		}
 		else
 			throw new exception("vectorul este invalid");
-
-		//this->books=books;
 
 	}
 
@@ -597,9 +600,6 @@ public:
 		fin.read((char*)&this->nrCarti, sizeof(this->nrCarti));
 
 		fin.read((char*)&books, sizeof(Book));
-
-
-
 	}
 
 };
@@ -714,7 +714,8 @@ void main() {
 	int v2[] = { 1920,1980,2010,2020 };
 	int v3[] = { 1937,1999 };
 	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99), b3;
-	cout << b.Descriere();// early-binding
+	cout << b1 << endl;
+	cout << b.Descriere(); // early-binding
 	//cin >> b; cout << endl;
 	cout << b << b1 << b2;
 
@@ -748,8 +749,6 @@ void main() {
 	cout << bp2->SchimbarePret() << endl << endl;
 
 	Book books[] = { b,b1,b2 };
-	/*for (int i = 0; i < 3; i++)
-		cout << books[i];*/
 
 	//testare cerinta 4 - supraincarcarea operatoriilor cunsocuti
 	cout << "--- schimbare nr volum ---" << endl;
@@ -783,9 +782,9 @@ void main() {
 
 
 	//cerinta 7 - salvare in fisier binar
-	Cititor c("Mara", books, 3), c1; //ok am fct ceva gresit in constructor this->versiuni e null?????
-	//cout << c;
-	ofstream fout("scriitor.bin", ios::out | ios::binary | ios::app);
+	Cititor c("Mara", books, 3), c1;
+	cout << c << endl;
+	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
 		c.scriereInFisierBinar(fout);
 		fout.close();
@@ -820,9 +819,10 @@ void main() {
 	//cerinta 10 - conceptul de polimorfism folosind o clasa abstracta
 	//trebuie sa transform un obiect p de tip phyisical in book
 
-	IMagazin** IVector = new IMagazin * [3]{ &b,&b1,&p }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
-	for (int i = 0; i < 3; i++) {
-		cout << IVector[i]->Descriere() << endl;
-	}
+	//IMagazin** IVector = new IMagazin * [3]{ &b,&b1,&p }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
+	//for (int i = 0; i < 3; i++) {
+	//	cout << IVector[i]->Descriere() << endl;
+	//}
+
 
 }
