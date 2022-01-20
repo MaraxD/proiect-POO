@@ -153,11 +153,13 @@ public:
 
 	//destructor
 	~Book() {
-		if (this->nume != nullptr)
-			delete[] this->nume;
+		cout << "destructor din book";
+		cout << this->nume<<endl;
+		if (nume != nullptr)
+			delete[] nume;
 
-		if (this->versiuni != nullptr)
-			delete[] this->versiuni;
+		if (versiuni != nullptr)
+			delete[] versiuni;
 	}
 
 
@@ -494,7 +496,10 @@ class Cititor {
 public:
 
 	Cititor() {
-
+		this->numeC = "Anonim";
+		this->books = nullptr;
+		cout << this->books;
+		this->nrCarti = 0;
 	}
 
 	Cititor(const string& numeC, Book* books, int nrCarti) {
@@ -516,6 +521,7 @@ public:
 		else
 			throw new exception("vectorul este invalid");
 
+
 	}
 
 	Cititor(const Cititor& c) {
@@ -529,9 +535,11 @@ public:
 	}
 
 	~Cititor() {
+		cout << "DESTRCUTOR DIN CITITOR";
 		if (this->books != nullptr) {
 			delete[] this->books;
 		}
+		//this->books = nullptr;
 	}
 
 
@@ -641,11 +649,10 @@ public:
 		this->books = s.books;
 	}
 
-
-
+	
 	friend ostream& operator<<(ostream& out, const Scriitor& s) {
 		out << "numele autorului: " << s.numeS << endl;
-		out << "cate carti a scris? " << s.nrCarti; //mrg
+		out << "cate carti a scris? " << s.nrCarti; 
 
 		for (Book* b : s.books) {
 			out << *b << endl;
@@ -713,7 +720,7 @@ void main() {
 	int v1[] = { 2019,2020,2021 };
 	int v2[] = { 1920,1980,2010,2020 };
 	int v3[] = { 1937,1999 };
-	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99), b3;
+	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99);
 	cout << b1 << endl;
 	cout << b.Descriere(); // early-binding
 	//cin >> b; cout << endl;
@@ -782,8 +789,7 @@ void main() {
 
 
 	//cerinta 7 - salvare in fisier binar
-	Cititor c("Mara", books, 3), c1;
-	cout << c << endl;
+	Cititor c("Mara", books, 3);
 	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
 		c.scriereInFisierBinar(fout);
@@ -792,7 +798,9 @@ void main() {
 	else
 		cout << "nu se poate scrie in fisierul binar";
 
-	ifstream fin("cititor.bin", ios::out | ios::binary);
+	Cititor c1;
+	cout << c1 << endl;
+	ifstream fin("cititor.bin", ios::in | ios::binary);
 	if (fin.is_open()) {
 		c1.citireDinFisierBinar(fin);
 		cout << "--- asta se afla in fisierul binar ---" << endl << c1 << endl;
@@ -801,7 +809,8 @@ void main() {
 	else
 		cout << " nu se poate deschide fisierul binar pentru citire";
 
-
+	//destructorul incearca sa ditruga mai multe obiecte la sf decat sunt??? si nu stiu de ce
+	//de la fisierul binar e problema, pot cumva sa apelez destructorul de cate ori am nevoie? stiu ca se apeleaza automat o data ce iese din scope dar
 
 	//cerinta 8 - transformare vector dinamic de obiecte in lista
 	cout << "--- lista ---" << endl;
@@ -819,10 +828,14 @@ void main() {
 	//cerinta 10 - conceptul de polimorfism folosind o clasa abstracta
 	//trebuie sa transform un obiect p de tip phyisical in book
 
-	//IMagazin** IVector = new IMagazin * [3]{ &b,&b1,&p }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
-	//for (int i = 0; i < 3; i++) {
-	//	cout << IVector[i]->Descriere() << endl;
-	//}
+	IMagazin** IVector = new IMagazin * [3]{ &b,&b1,&p }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
+	for (int i = 0; i < 3; i++) {
+		cout << IVector[i]->Descriere() << endl;
+	}
 
 
+	cout << "asta e c1 "<<endl << c1;
+	cout << "asta e c "<<endl << c;
+
+	
 }
