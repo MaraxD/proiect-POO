@@ -153,8 +153,6 @@ public:
 
 	//destructor
 	~Book() {
-		cout << "destructor din book";
-		cout << this->nume<<endl;
 		if (nume != nullptr)
 			delete[] nume;
 
@@ -192,7 +190,6 @@ public:
 
 	//implementare functie virtuala
 	double SchimbarePret() {
-		pret += 0;
 		return pret;
 	}
 
@@ -217,8 +214,12 @@ public:
 
 	friend istream& operator>> (istream& in, Book& b) {
 		cout << "cum se numeste cartea? ";
+
+		in.ignore();
 		char aux[100];
-		in >> aux;
+		in.get(aux, 100);
+
+		//in >> aux;
 
 		if (b.nume != nullptr)
 			delete[] b.nume;
@@ -228,12 +229,15 @@ public:
 		cout << "la ce versiune e? ";
 		in >> b.nrV;
 
-		cout << "anii fiecarei versiuni: ";
+		cout << "anii fiecarei versiuni: " << endl;
 		if (b.versiuni != nullptr)
 			delete[] b.versiuni;
 		b.versiuni = new int[b.nrV];
-		for (int i = 0; i < b.nrV; i++)
+		for (int i = 0; i < b.nrV; i++) {
+			cout << "versiunea " << i + 1 << " ";
 			in >> b.versiuni[i];
+		}
+
 
 		cout << "cat costa? ";
 		in >> b.pret;
@@ -349,11 +353,20 @@ public:
 		return EsteHardcover;
 	}
 
-	double pret = getPret();
+	const char* getInChar() {
+		switch (EsteHardcover)
+		{
+		case 1:
+			return "da";
+			break;
+		case 0:
+			return "nu";
+			break;
+		}
+	}
 
 	double SchimbarePret() {
-		pret += 20.00;
-		return pret;
+		return getPret() + 20.00;
 	}
 
 	string Descriere() {
@@ -386,7 +399,6 @@ class Audiobook : public Book, public IMagazin {
 	double durata;
 
 public:
-	//+validare
 	Audiobook(const char* nume,
 		int* versiuni,
 		int nrV,
@@ -404,11 +416,8 @@ public:
 
 	}
 
-	double pret = getPret();
-
 	double SchimbarePret() {
-		pret -= 20.00;
-		return getPret();
+		return getPret() - 20.00;
 	}
 
 	string Descriere() {
@@ -424,7 +433,7 @@ public:
 	friend istream& operator>> (istream& in, Audiobook& a) {
 		in >> (Book&)a;
 		cout << "cat dureaza sa asculti tot audiobook-ul? ";
-		in >> a.durata;
+		in >> a.durata; cout << " minute";
 		return in;
 	}
 };
@@ -457,11 +466,20 @@ public:
 
 	}
 
-	int pret = getPret();
+	const char* getInChar() {
+		switch (AreNarator)
+		{
+		case 1:
+			return "da";
+			break;
+		case 0:
+			return "nu";
+			break;
+		}
+	}
 
 	double SchimbarePret() {
-		pret -= 30.00;
-		return getPret();
+		return getPret() - 30.00;
 	}
 
 	string Descriere() {
@@ -478,6 +496,7 @@ public:
 		in >> (Book&)e;
 		cout << "cu ce aplicatii este compatibila aceasta carte? ";
 		in >> e.compatibilitate;
+		in.ignore(50, '\n'); getline(in, e.compatibilitate);
 
 		cout << "are optiune de narator? ";
 		in >> e.AreNarator;
@@ -516,7 +535,7 @@ public:
 		if (books != nullptr) {
 			this->books = new Book[nrCarti];
 			for (int i = 0; i < nrCarti; i++)
-				this->books[i] = books[i]; //se duce in op = din Book
+				this->books[i] = books[i];
 		}
 		else
 			throw new exception("vectorul este invalid");
@@ -649,10 +668,10 @@ public:
 		this->books = s.books;
 	}
 
-	
+
 	friend ostream& operator<<(ostream& out, const Scriitor& s) {
 		out << "numele autorului: " << s.numeS << endl;
-		out << "cate carti a scris? " << s.nrCarti; 
+		out << "cate carti a scris? " << s.nrCarti;
 
 		for (Book* b : s.books) {
 			out << *b << endl;
@@ -720,11 +739,12 @@ void main() {
 	int v1[] = { 2019,2020,2021 };
 	int v2[] = { 1920,1980,2010,2020 };
 	int v3[] = { 1937,1999 };
-	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99);
+	int v4[] = { 1925,1999,2015,2020 };
+	Book b("Rascoala", v3, 2, 1, 10.99), b1("Ion", v2, 4, 1, 9.99), b2("Gorila", v3, 2, 2, 9.99), b3;
 	cout << b1 << endl;
 	cout << b.Descriere(); // early-binding
-	//cin >> b; cout << endl;
-	cout << b << b1 << b2;
+	//cin >> b3; cout << endl;
+	cout /*<<b3*/ << b << b1 << b2;
 
 	//testare functie virtuala 
 	//early - binding 
@@ -735,27 +755,26 @@ void main() {
 
 
 	Physical p("Divergent", v, 4, 1, 49.99, 1), p1("Insurgent", v, 4, 2, 49.99, 1), p2("Allegiant", v, 4, 3, 49.99, 1);
-	Book carti[] = { p,p1,p2 };
-	cout << p.Descriere();
-	cout << p << endl << endl;
-
-	cout << p.SchimbarePret() << endl << endl;
+	Audiobook a("The great gatsby", v4, 4, 1, 35.55, 270);
+	Ebook e("Linear algebra", v, 4, 1, 60.00, "Kindle", 1),e1;
+	cin >> e1;
+	cout << e1 << endl << endl;
 
 	//late-binding
 	cout << "--- late binding ---" << endl;
 	Book* bp = &p;
 	cout << bp->Descriere() << endl;
-	cout << bp->SchimbarePret() << endl;//nu schimba pretu??? tot se duce in functia din clasa Book in loc de Physical
+	cout << bp->SchimbarePret() << endl;//se poate??, i mean ar trebui
 
-	Book* bp1 = &p1;
-	cout << bp1->Descriere() << endl;
-	cout << bp1->SchimbarePret() << endl;
+	Book* ba = &a;
+	cout << ba->Descriere() << endl;
+	cout << ba->SchimbarePret() << endl;
 
-	Book* bp2 = &p2;
-	cout << bp2->Descriere() << endl;
-	cout << bp2->SchimbarePret() << endl << endl;
+	Book* be = &e;
+	cout << be->Descriere() << endl;
+	cout << be->SchimbarePret() << endl << endl;
 
-	Book books[] = { b,b1,b2 };
+	Book books[] = { b,p,a,e };
 
 	//testare cerinta 4 - supraincarcarea operatoriilor cunsocuti
 	cout << "--- schimbare nr volum ---" << endl;
@@ -769,7 +788,6 @@ void main() {
 	else
 		cout << "sunt diferite intre ele" << endl << endl;
 
-	//ce face asta????
 	b(2);
 	cout << b << endl << endl;
 
@@ -789,7 +807,7 @@ void main() {
 
 
 	//cerinta 7 - salvare in fisier binar
-	Cititor c("Mara", books, 3);
+	/*Cititor c("Mara", books, 4);
 	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
 		c.scriereInFisierBinar(fout);
@@ -799,7 +817,6 @@ void main() {
 		cout << "nu se poate scrie in fisierul binar";
 
 	Cititor c1;
-	cout << c1 << endl;
 	ifstream fin("cititor.bin", ios::in | ios::binary);
 	if (fin.is_open()) {
 		c1.citireDinFisierBinar(fin);
@@ -807,12 +824,14 @@ void main() {
 		fin.close();
 	}
 	else
-		cout << " nu se poate deschide fisierul binar pentru citire";
+		cout << " nu se poate deschide fisierul binar pentru citire";*/
 
-	//destructorul incearca sa ditruga mai multe obiecte la sf decat sunt??? si nu stiu de ce
-	//de la fisierul binar e problema, pot cumva sa apelez destructorul de cate ori am nevoie? stiu ca se apeleaza automat o data ce iese din scope dar
 
-	//cerinta 8 - transformare vector dinamic de obiecte in lista
+
+		//destructorul incearca sa distruga mai multe obiecte la sf decat sunt??? si nu stiu de ce
+		//de la fisierul binar e problema, pot cumva sa apelez destructorul de cate ori am nevoie? stiu ca se apeleaza automat o data ce iese din scope dar
+
+		//cerinta 8 - transformare vector dinamic de obiecte in lista
 	cout << "--- lista ---" << endl;
 	list<Book*> listaCarti;
 	list<Book>::iterator itList;
@@ -827,15 +846,13 @@ void main() {
 
 	//cerinta 10 - conceptul de polimorfism folosind o clasa abstracta
 	//trebuie sa transform un obiect p de tip phyisical in book
+	//putem face cu o lista si apelam metoda virtuala PURA
 
-	IMagazin** IVector = new IMagazin * [3]{ &b,&b1,&p }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
-	for (int i = 0; i < 3; i++) {
+	IMagazin** IVector = new IMagazin * [5]{ &b,&b1,&p,&a,&e }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
+	for (int i = 0; i < 5; i++) {
 		cout << IVector[i]->Descriere() << endl;
 	}
 
 
-	cout << "asta e c1 "<<endl << c1;
-	cout << "asta e c "<<endl << c;
 
-	
 }
