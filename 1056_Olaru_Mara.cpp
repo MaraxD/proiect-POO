@@ -24,7 +24,7 @@ public:
 //clasa abstracta
 class IMagazin {
 public:
-	virtual string Descriere() = 0;
+	virtual double SchimbarePret() = 0;
 };
 
 class Book :public IMagazin {
@@ -207,7 +207,7 @@ public:
 			out << b.versiuni[i] << ", ";
 		}out << ")" << endl;
 
-		out << "pretul cartii: " << b.pret << endl << "nr cartii in serie: " << b.nrCarte << endl;
+		out << "pretul cartii: " << b.pret << " lei" << endl << "nr cartii in serie: " << b.nrCarte << endl;
 
 		return out;
 	}
@@ -215,9 +215,9 @@ public:
 	friend istream& operator>> (istream& in, Book& b) {
 		cout << "cum se numeste cartea? ";
 
-		in.ignore();
+		/*in.ignore();*/
 		char aux[100];
-		in.get(aux, 100);
+		in.getline(aux, 100);
 
 		//in >> aux;
 
@@ -373,10 +373,6 @@ public:
 		return "----detalii despre cartea fizica----";
 	}
 
-	//op !() 
-	bool operator!() {
-		return !EsteHardcover;
-	}
 
 	friend ostream& operator<< (ostream& out, const Physical& p) {
 		out << (Book)p;
@@ -390,8 +386,6 @@ public:
 		in >> p.EsteHardcover;
 		return in;
 	}
-
-
 
 };
 
@@ -495,8 +489,8 @@ public:
 	friend istream& operator>> (istream& in, Ebook& e) {
 		in >> (Book&)e;
 		cout << "cu ce aplicatii este compatibila aceasta carte? ";
-		in >> e.compatibilitate;
-		in.ignore(50, '\n'); getline(in, e.compatibilitate);
+		in.ignore();
+		getline(in, e.compatibilitate);
 
 		cout << "are optiune de narator? ";
 		in >> e.AreNarator;
@@ -517,7 +511,6 @@ public:
 	Cititor() {
 		this->numeC = "Anonim";
 		this->books = nullptr;
-		cout << this->books;
 		this->nrCarti = 0;
 	}
 
@@ -554,7 +547,6 @@ public:
 	}
 
 	~Cititor() {
-		cout << "DESTRCUTOR DIN CITITOR";
 		if (this->books != nullptr) {
 			delete[] this->books;
 		}
@@ -650,7 +642,6 @@ public:
 		else
 			this->nrCarti = nrCarti;
 
-		//validare?
 		this->books = books;
 	}
 
@@ -664,7 +655,6 @@ public:
 			throw new exception("numarul e invalid");
 		else this->nrCarti = s.nrCarti;
 
-		//validare
 		this->books = s.books;
 	}
 
@@ -733,8 +723,7 @@ public:
 
 
 void main() {
-
-	//cerinta 1 - afisare obiecte de tip Book, Physical
+	//cerinta 1 - afisare obiecte de tip Book, Physical, Ebook, Audiobook
 	int v[] = { 2009,2010,2015,2020 };
 	int v1[] = { 2019,2020,2021 };
 	int v2[] = { 1920,1980,2010,2020 };
@@ -753,18 +742,18 @@ void main() {
 	else
 		cout << endl << b.SchimbarePret() << endl;
 
-
 	Physical p("Divergent", v, 4, 1, 49.99, 1), p1("Insurgent", v, 4, 2, 49.99, 1), p2("Allegiant", v, 4, 3, 49.99, 1);
 	Audiobook a("The great gatsby", v4, 4, 1, 35.55, 270);
-	Ebook e("Linear algebra", v, 4, 1, 60.00, "Kindle", 1),e1;
+	Ebook e("Linear algebra", v, 4, 1, 60.00, "Kindle", 1), e1;
 	cin >> e1;
 	cout << e1 << endl << endl;
+
 
 	//late-binding
 	cout << "--- late binding ---" << endl;
 	Book* bp = &p;
 	cout << bp->Descriere() << endl;
-	cout << bp->SchimbarePret() << endl;//se poate??, i mean ar trebui
+	cout << bp->SchimbarePret() << endl;
 
 	Book* ba = &a;
 	cout << ba->Descriere() << endl;
@@ -775,6 +764,7 @@ void main() {
 	cout << be->SchimbarePret() << endl << endl;
 
 	Book books[] = { b,p,a,e };
+
 
 	//testare cerinta 4 - supraincarcarea operatoriilor cunsocuti
 	cout << "--- schimbare nr volum ---" << endl;
@@ -807,7 +797,7 @@ void main() {
 
 
 	//cerinta 7 - salvare in fisier binar
-	/*Cititor c("Mara", books, 4);
+	Cititor c("Mara", books, 4);
 	ofstream fout("cititor.bin", ios::out | ios::binary | ios::app);
 	if (fout.is_open()) {
 		c.scriereInFisierBinar(fout);
@@ -816,22 +806,23 @@ void main() {
 	else
 		cout << "nu se poate scrie in fisierul binar";
 
-	Cititor c1;
+
+	/*Cititor c1;*/
+	//stiu ca nu e bine, trebuia sa afisez continutul fisierului cu un alt obiect de tip Cititor 
+	// doar ca mi se blocheaza la sfarsit in destructorul din Books si nu inteleg de ce incearca sa stearga o zona
+	// de memorie la care nu are acces cand c1 si c sunt clar definite (am vazut asta si in debug). nu mi dau seama
 	ifstream fin("cititor.bin", ios::in | ios::binary);
 	if (fin.is_open()) {
-		c1.citireDinFisierBinar(fin);
-		cout << "--- asta se afla in fisierul binar ---" << endl << c1 << endl;
+		c.citireDinFisierBinar(fin);
+		cout << "--- asta se afla in fisierul binar ---" << endl << c << endl;
 		fin.close();
 	}
 	else
-		cout << " nu se poate deschide fisierul binar pentru citire";*/
+		cout << " nu se poate deschide fisierul binar pentru citire";
 
 
 
-		//destructorul incearca sa distruga mai multe obiecte la sf decat sunt??? si nu stiu de ce
-		//de la fisierul binar e problema, pot cumva sa apelez destructorul de cate ori am nevoie? stiu ca se apeleaza automat o data ce iese din scope dar
-
-		//cerinta 8 - transformare vector dinamic de obiecte in lista
+	//cerinta 8 - transformare vector dinamic de obiecte in lista
 	cout << "--- lista ---" << endl;
 	list<Book*> listaCarti;
 	list<Book>::iterator itList;
@@ -845,14 +836,10 @@ void main() {
 
 
 	//cerinta 10 - conceptul de polimorfism folosind o clasa abstracta
-	//trebuie sa transform un obiect p de tip phyisical in book
-	//putem face cu o lista si apelam metoda virtuala PURA
 
-	IMagazin** IVector = new IMagazin * [5]{ &b,&b1,&p,&a,&e }; //dimensiunea n ar trebui sa fie introdusa de mine, fa un sizeof()
+	IMagazin** IVector = new IMagazin * [5]{ &b,&b1,&p,&a,&e }; 
 	for (int i = 0; i < 5; i++) {
-		cout << IVector[i]->Descriere() << endl;
+		cout << IVector[i]->SchimbarePret() << endl;
 	}
-
-
 
 }
